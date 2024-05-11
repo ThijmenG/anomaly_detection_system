@@ -1,7 +1,7 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QDragEnterEvent, QDropEvent
 import os
-from model_handler import run_model
+from .model_handler import run_model
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PyQt5.QtWidgets import QSizePolicy
@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import (QMainWindow, QLabel, QPushButton, QVBoxLayout, QWid
                              QRadioButton, QGroupBox, QHBoxLayout, QLineEdit, QApplication, QDesktopWidget)
 from PyQt5.QtCore import Qt, QDate
 from PyQt5.QtWidgets import QDateEdit, QSpinBox, QLineEdit
-from data_selection import DataSelectionLabel
+from .data_selection import DataSelectionLabel
 
 
 
