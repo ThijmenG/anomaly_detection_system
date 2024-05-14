@@ -1,7 +1,6 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QDragEnterEvent, QDropEvent
 import os
-from .model_handler import run_model
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PyQt5.QtWidgets import QSizePolicy
@@ -11,6 +10,10 @@ from PyQt5.QtWidgets import (QMainWindow, QLabel, QPushButton, QVBoxLayout, QWid
 from PyQt5.QtCore import Qt, QDate
 from PyQt5.QtWidgets import QDateEdit, QSpinBox, QLineEdit
 from .data_selection import DataSelectionLabel
+from .Results_plot import PlotWindow
+from .model_handler import run_model
+from Model.data_loader import data_loader
+import numpy as np
 
 
 
@@ -33,6 +36,12 @@ class MainWindow(QMainWindow):
         # File drop label
         self.initFileDrop()
 
+        # Error message label
+        self.errorMessageLabel = QLabel(self)
+        self.errorMessageLabel.setStyleSheet("color: red;")
+        self.errorMessageLabel.hide()  # Initially hide the error message label
+        self.layout.addWidget(self.errorMessageLabel)
+
         # Cloggage question group
         self.initClogQuestionGroup()
 
@@ -45,8 +54,14 @@ class MainWindow(QMainWindow):
 
     def initFileDrop(self):
         self.fileDropLabel = DataSelectionLabel('Drop your file here or click to select', self)
-        self.fileDropLabel.fileSelected.connect(self.enableRunModelButton)  # Connect the signal to the slot
+        self.fileDropLabel.fileSelected.connect(self.enableRunModelButton)
+        self.fileDropLabel.invalidFileSelected.connect(self.showErrorMessage)  # Connect signal to slot
         self.layout.addWidget(self.fileDropLabel)
+
+    def showErrorMessage(self, message):
+        self.errorMessageLabel.setText(message)
+        self.errorMessageLabel.show()
+
 
     def initClogQuestionGroup(self):
         self.clogQuestionGroup = QGroupBox("Has there been any cloggages in this period?")
@@ -70,6 +85,7 @@ class MainWindow(QMainWindow):
 
     def enableRunModelButton(self, filePath):
         self.filePath = filePath
+        self.errorMessageLabel.hide()  # Hide error message when a valid file is selected
         self.runModelButton.setEnabled(True)
 
     def initRunModelButton(self):
@@ -165,69 +181,25 @@ class MainWindow(QMainWindow):
 
     def runModel(self):
         print('got to runModel')
-        if self.noButton.isChecked():
-            result = run_model(self.filePath)
 
+        new_data = data_loader(self.filePath)  # Load data using the data_loader function
+        print(new_data.head()  )
+
+        if self.noButton.isChecked():
+            print('no button checked')
+            processed_data, predictions = run_model(self.filePath, new_data)
+            self.resultWindow = PlotWindow(processed_data, predictions)
+            self.resultWindow.show()
         else:
-            # Create a DataFrame with the dates, offline hours, and clog location description
             data = {
                 'Date': [dateInput.date().toPyDate() for dateInput in self.dateInputs],
                 'Offline Hours': [offlineHoursInput.value() for offlineHoursInput in self.offlineHoursInputs],
                 'Clog Location': [clogLocationInput.text() for clogLocationInput in self.clogLocationInputs]
             }
-            df = pd.DataFrame(data)
+            clog_data = pd.DataFrame(data)
+            processed_data, predictions = run_model(self.filePath, new_data)
 
-            # Pass the DataFrame and the selected file to the run_model function
-            result = run_model(self.filePath, df)
-
-        self.resultWindow = PlotWindow(result)  # self.resultWindow keeps the reference
-        self.resultWindow.show()
-
-
-class PlotWindow(QMainWindow):
-    def __init__(self, data):
-        super().__init__()
-        self.data = data
-        self.initUI()
-
-    def initUI(self):
-        self.setWindowTitle('Plot Result')
-        self.setGeometry(100, 100, 800, 600)  # Adjust size as needed
-
-        # Create a widget for window content
-        self.centralWidget = QWidget(self)
-        self.setCentralWidget(self.centralWidget)
-
-        # Vertical layout
-        layout = QVBoxLayout(self.centralWidget)
-
-        # Create a Matplotlib canvas and embed it into our window
-        self.canvas = PlotCanvas(self, width=5, height=4, data=self.data)
-        layout.addWidget(self.canvas)
-
-        self.show()
-
-
-class PlotCanvas(FigureCanvas):
-    def __init__(self, parent, width, height, dpi=100, data=None):
-        fig = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = fig.add_subplot(111)
-
-        FigureCanvas.__init__(self, fig)
-        self.setParent(parent)
-
-        FigureCanvas.setSizePolicy(self,
-                                   QSizePolicy.Expanding,
-                                   QSizePolicy.Expanding)
-        FigureCanvas.updateGeometry(self)
-        self.plot(data)  # Ensure that data is passed here and handled within plot
-
-    def plot(self, data):
-        try:
-            x, y = data
-            self.axes.plot(x, y, 'r-')
-            self.draw()
-        except Exception as e:
-            print(f"Failed to plot due to: {e}")
+            self.resultWindow = PlotWindow(processed_data, predictions, clog_data=clog_data)
+            self.resultWindow.show()
 
 

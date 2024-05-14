@@ -6,6 +6,7 @@ from PyQt5.QtCore import pyqtSignal
 
 class DataSelectionLabel(QLabel):
     fileSelected = pyqtSignal(str)  # Signal that emits the file path when a file is selected
+    invalidFileSelected = pyqtSignal(str)  # Signal that emits an error message when an invalid file is selected
 
     def __init__(self, title, parent):
         super().__init__(title, parent)
@@ -20,21 +21,26 @@ class DataSelectionLabel(QLabel):
         else:
             event.ignore()
 
+
     def dropEvent(self, event):
         if event.mimeData().hasUrls():
             event.accept()
             urls = event.mimeData().urls()
-            self.filePath = urls[0].toLocalFile()
-            self.updateFileSelection(self.filePath)
+            filePath = urls[0].toLocalFile()
+            if filePath.endswith(('.csv', '.xlsx')):
+                self.updateFileSelection(filePath)
+            else:
+                self.invalidFileSelected.emit("Invalid file type. Please select a CSV or Excel file.")  # Emit signal
 
     def mousePressEvent(self, event):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         fileName, _ = QFileDialog.getOpenFileName(self, "Select a file", "",
-                                                  "All Files (*);;Text Files (*.txt)", options=options)
+                                                  "CSV Files (*.csv);;Excel Files (*.xlsx)", options=options)
         if fileName:
             self.updateFileSelection(fileName)
-
+        else:
+            self.invalidFileSelected.emit("Invalid file type. Please select a CSV or Excel file.")  # Emit signal
 
     def updateFileSelection(self, filePath):
         self.filePath = filePath
