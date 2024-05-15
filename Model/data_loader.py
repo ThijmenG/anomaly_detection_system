@@ -51,8 +51,7 @@ def dateTimeFix(df: pd.DataFrame):
     Returns:
         df (pd.DataFrame): Dataframe with the dates and column name fixed
     """
-
-    df = df.rename(columns = {"DateTime":"Date"})
+    df = df.rename(columns = {"DateTime":"Date"}) # Fix the date column tag
 
     replDict = {" jan ": "-01-",
             " feb ": "-02-",
@@ -66,18 +65,32 @@ def dateTimeFix(df: pd.DataFrame):
             " okt ": "-10-",
             " nov ": "-11-",
             " dec ": "-12-"}
-
-    df["Date"] = df["Date"].replace(to_replace=replDict, regex=True)
+    df["Date"] = df["Date"].replace(to_replace=replDict, regex=True) # Standardize the date
 
     return df
 
-def data_loader(file_path: str, n: int=None):
+def checkData(df: pd.DataFrame):
+    """
+    Checks if all required columns are present in the dataframe
+
+    Args:
+        df (pd.DataFrame): Dataframe to be checked
+
+    Returns:
+        bool: Wether all columns have been found
+    """
+    reqColumns = ['18BL02PT\\PV -  (Bar)','18BL03PT\\PV -  (Bar)','18FI02LT01 -  (kg)','18OV01HM01_filtered -  (%)']
+    for col in reqColumns:
+        if col not in df.columns:
+            return False
+    return True
+
+def data_loader(file_path: str):
     """
     Load data from a CSV or Excel file and return it as a DataFrame.
 
     Parameters:
     file_path (str): The path to the file to be loaded.
-    n (int, optional): Number of sensors included in the export. Defaults to None.
 
     Returns:
     pd.DataFrame: The loaded data as a DataFrame.
@@ -90,14 +103,19 @@ def data_loader(file_path: str, n: int=None):
         raw = pd.read_csv(file_path, skiprows=startLine)
         df = CSVsplitterMerger(raw)
     elif file_path.endswith('.xlsx'):
-        if n==None:
-            raise ValueError("Number of sensors is not specified. This is required for Excel file support")
-        else:
-            df = pd.read_excel(file_path, skiprows=range(0,7+n))
-            df = df.rename(columns={"Unnamed: 1":"DateTime"})
-            df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
+        testDf = pd.read_excel(file_path, skiprows=range(5)) # Read everything including the sensor types
+        emptyRow = testDf.isnull().all(axis=1) # Find where the sensor preamble ends
+        n = testDf[emptyRow].index[0] # Mark the number of rows in the sensor preamble
+
+        # Read the actual data
+        df = pd.read_excel(file_path, skiprows=range(7+n))
+        df = df.rename(columns={"Unnamed: 1":"DateTime"})
+        df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
     else:
         raise ValueError("Unsupported file format. Please select a CSV or Excel file.")
     
     df = dateTimeFix(df)
+    columnCheck = checkData(df)
+    if not columnCheck:
+        raise ValueError("Not all required columns are present in the dataset.")
     return df
