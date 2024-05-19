@@ -53,23 +53,26 @@ def read_initial_data(df: pd.DataFrame):
 
     return df
 
-def outlier_treatment(df: pd.DataFrame):
+def outlier_treatment(df: pd.DataFrame, pressure_threshold : float , moisture_upper : float , moisture_lower : float):
     """
-    Removes the outliers in the data for training by capping the values to nominal level (use only training data)
+    Removes the outliers in the data for training by capping the values to nominal level (used for only training data)
 
     Args:
         df (pd.DataFrame): Dataframe to remove the outliers
+        pressure_threshold (float) : Threshold for lower pressure level (nominal : -0.3)
+        moisture_upper (float) : Threshold for upper bound of moisture content in fines
+        moisture_lower (float) : Threshold for lower bound of moisture content in fines
 
     Returns:
         df (pd.DataFrame): Dataframe with capped values
     """
 
-    df.loc[df['18BL02PT\PV -  (Bar)'] < -0.3 , '18BL02PT\PV -  (Bar)'] = -0.3
-    df.loc[df['18BL03PT\PV -  (Bar)'] < -0.3 , '18BL03PT\PV -  (Bar)'] = -0.3
+    df.loc[df['18BL02PT\PV -  (Bar)'] < pressure_threshold , '18BL02PT\PV -  (Bar)'] = pressure_threshold
+    df.loc[df['18BL03PT\PV -  (Bar)'] < pressure_threshold, '18BL03PT\PV -  (Bar)'] = pressure_threshold
     df.loc[df['18FI02LT01 -  (kg)'] > 15 , '18FI02LT01 -  (kg)'] = 15
     df.loc[df['18FI02LT01 -  (kg)'] < 0 , '18FI02LT01 -  (kg)'] = 0
-    df.loc[df['18OV01HM01_filtered -  (%)'] > 3.5 , '18OV01HM01_filtered -  (%)'] = 3.5
-    df.loc[df['18OV01HM01_filtered -  (%)'] < 2 , '18OV01HM01_filtered -  (%)'] = 2
+    df.loc[df['18OV01HM01_filtered -  (%)'] > moisture_upper , '18OV01HM01_filtered -  (%)'] = moisture_upper
+    df.loc[df['18OV01HM01_filtered -  (%)'] < moisture_lower , '18OV01HM01_filtered -  (%)'] = moisture_lower
 
     return df
 
