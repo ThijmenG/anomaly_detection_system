@@ -21,7 +21,6 @@ class DataSelectionLabel(QLabel):
         else:
             event.ignore()
 
-
     def dropEvent(self, event):
         if event.mimeData().hasUrls():
             event.accept()
@@ -34,17 +33,15 @@ class DataSelectionLabel(QLabel):
 
     def mousePressEvent(self, event):
         options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
         fileName, _ = QFileDialog.getOpenFileName(self, "Select a file", "",
-                                                  "CSV Files (*.csv);;Excel Files (*.xlsx)", options=options)
-        if fileName:
+                                                  "CSV or Excel Files (*.csv *.xlsx)", options=options)
+        if fileName and fileName.endswith(('.csv', '.xlsx')):
             self.updateFileSelection(fileName)
-        else:
+        elif fileName:
             self.invalidFileSelected.emit("Invalid file type. Please select a CSV or Excel file.")  # Emit signal
 
     def updateFileSelection(self, filePath):
         self.filePath = filePath
         self.setText(f"Selected File: {os.path.basename(self.filePath)}")
         self.setStyleSheet("background-color: #90EE90")  # Light green
-        self.fileSelected.emit(self.filePath)  #
-
+        self.fileSelected.emit(self.filePath)

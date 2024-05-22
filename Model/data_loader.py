@@ -119,3 +119,5 @@ def data_loader(file_path: str):
     if not columnCheck:
         raise ValueError("Not all required columns are present in the dataset.")
     return df
+
+

@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from datetime import datetime, timedelta
 
 
 def run_model(file_path, new_data):
@@ -14,7 +15,10 @@ def run_model(file_path, new_data):
     x = np.linspace(0, 10, 100)
     y = np.sin(x)
 
-    predictions = (x, y)
+    # Create a list of three datetime objects
+    predictions = [datetime(2024, 4, 21, 23, 18),
+                   datetime(2024, 4, 21, 23, 18) + timedelta(days=1),
+                   datetime(2024, 4, 21, 23, 18) + timedelta(days=2)]
 
     #3. postprocessing
     #4. return the predictions

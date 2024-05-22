@@ -1,0 +1,162 @@
+/* General application styling */
+QMainWindow {
+    background-color: #f7f7f7;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 14px;
+}
+
+/* QLabel styling */
+QLabel {
+    color: #333;
+    padding: 5px;
+}
+
+/* QPushButton styling */
+QPushButton {
+    background-color: #0078d7;
+    color: white;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 5px;
+    font-size: 14px;
+    border: none;
+}
+
+QPushButton:hover {
+    background-color: #005bb5;
+}
+
+QPushButton:disabled {
+    background-color: #cccccc;
+    color: #666666;
+}
+
+/* QComboBox styling */
+QComboBox {
+    padding: 5px;
+    margin: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: white;
+}
+
+QComboBox QAbstractItemView {
+    border: 1px solid #ccc;
+    background-color: white;
+    selection-background-color: #0078d7;
+    selection-color: white;
+}
+
+/* QListWidget styling */
+QListWidget {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+QListWidget::item {
+    padding: 10px;
+    margin: 2px;
+}
+
+QListWidget::item:selected {
+    background-color: #0078d7;
+    color: white;
+    border-radius: 5px;
+}
+
+/* QGroupBox styling */
+QGroupBox {
+    margin-top: 10px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top center;
+    padding: 0 3px;
+    background-color: #f7f7f7;
+    border-radius: 3px;
+}
+
+/* QRadioButton styling */
+QRadioButton {
+    margin: 5px;
+    font-size: 14px;
+}
+
+/* QLineEdit styling */
+QLineEdit {
+    padding: 5px;
+    margin: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* QDateEdit styling */
+QDateEdit {
+    padding: 5px;
+    margin: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* QSpinBox styling */
+QSpinBox {
+    padding: 5px;
+    margin: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* QToolTip styling */
+QToolTip {
+    background-color: #333;
+    color: white;
+    border: 1px solid #333;
+    padding: 5px;
+    border-radius: 3px;
+}
+
+/* Custom scrollbars */
+QScrollBar:vertical {
+    border: none;
+    background: #f7f7f7;
+    width: 12px;
+    margin: 22px 0 22px 0;
+    border-radius: 5px;
+}
+
+QScrollBar::handle:vertical {
+    background: #0078d7;
+    min-height: 20px;
+    border-radius: 5px;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    border: none;
+    background: none;
+}
+
+QScrollBar:horizontal {
+    border: none;
+    background: #f7f7f7;
+    height: 12px;
+    margin: 0px 22px 0 22px;
+    border-radius: 5px;
+}
+
+QScrollBar::handle:horizontal {
+    background: #0078d7;
+    min-width: 20px;
+    border-radius: 5px;
+}
+
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+    border: none;
+    background: none;
+}

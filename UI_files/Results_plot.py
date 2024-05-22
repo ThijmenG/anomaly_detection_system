@@ -1,6 +1,10 @@
-from PyQt5.QtWidgets import QSizePolicy, QMainWindow, QWidget, QVBoxLayout, QComboBox
+from PyQt5.QtWidgets import QSizePolicy, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QLabel, QListWidget
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QListWidgetItem
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+import pandas as pd
+import numpy as np
 
 
 class PlotCanvas(FigureCanvas):
@@ -12,11 +16,47 @@ class PlotCanvas(FigureCanvas):
         FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
 
-    def plot(self, new_data, y_col):
-        self.axes.clear()
-        self.axes.plot(new_data.index, new_data[y_col])
-        self.axes.set_title(f'Plot: {y_col}')
-        self.draw()
+    def plot(self, new_data, y_col, predictions=None, selected_prediction=None):
+        try:
+            self.axes.clear()
+
+            # Ensure the 'Date' column is in datetime format and set as index
+            if 'Date' not in new_data.columns:
+                raise ValueError("The DataFrame must contain a 'Date' column.")
+
+            # Convert 'Date' column to datetime
+            new_data['Date'] = pd.to_datetime(new_data['Date'], errors='coerce')
+            new_data = new_data.dropna(subset=['Date'])  # Drop rows where 'Date' could not be converted
+            new_data.set_index('Date', inplace=True)
+
+            # Drop any rows with NaT values in y_col
+            new_data = new_data.dropna(subset=[y_col])
+
+            # Plot the data
+            self.axes.plot(new_data.index, new_data[y_col])
+            self.axes.set_title(f'Plot: {y_col}')
+            self.axes.set_xlabel('Date')
+            self.axes.set_ylabel(y_col)
+
+            # Add vertical lines for each datetime in predictions
+            if predictions is not None:
+                for prediction in predictions:
+                    line_width = 2 if prediction == selected_prediction else 1
+                    self.axes.axvline(x=prediction, color='r', linestyle='--', linewidth=line_width)
+
+            # Set x-axis ticks to show only 20 evenly spaced points
+            x_ticks = np.linspace(0, len(new_data.index) - 1, 20, dtype=int)
+            self.axes.set_xticks(new_data.index[x_ticks])
+            self.axes.set_xticklabels(new_data.index[x_ticks].strftime('%Y-%m-%d %H:%M:%S'), rotation=45, ha='right')
+
+            # Set y-axis limits and ticks
+            y_min, y_max = new_data[y_col].min(), new_data[y_col].max()
+            self.axes.set_ylim([y_min, y_max])
+            self.axes.set_yticks(np.linspace(y_min, y_max, 10))
+
+            self.draw()
+        except Exception as e:
+            print(f"Error in plot: {e}")
 
 
 class PlotWindow(QMainWindow):
@@ -25,28 +65,53 @@ class PlotWindow(QMainWindow):
         self.new_data = new_data
         self.predictions = predictions
         self.clog_data = clog_data
+        self.selected_prediction = None
         self.initUI()
 
     def initUI(self):
         self.setWindowTitle('Plot Result')
-        self.setGeometry(100, 100, 800, 600)
+        self.setGeometry(100, 100, 1000, 600)  # Increase window width to accommodate the list
 
         self.centralWidget = QWidget(self)
         self.setCentralWidget(self.centralWidget)
-        layout = QVBoxLayout(self.centralWidget)
+        mainLayout = QHBoxLayout(self.centralWidget)  # Use horizontal layout for main layout
 
+        # Create a layout for the predictions list
+        self.predictionsLayout = QVBoxLayout()
+        self.predictionsLabel = QLabel("Possible Clog Moments")
+        self.predictionsList = QListWidget(self)
+
+        if self.predictions is not None:
+            for prediction in self.predictions:
+                item = QListWidgetItem(prediction.strftime('%Y-%m-%d %H:%M:%S'))
+                item.setData(Qt.UserRole, prediction)
+                self.predictionsList.addItem(item)
+
+        self.predictionsList.itemClicked.connect(self.onPredictionSelected)
+
+        self.predictionsLayout.addWidget(self.predictionsLabel)
+        self.predictionsLayout.addWidget(self.predictionsList)
+
+        # Create a layout for the plot
+        self.plotLayout = QVBoxLayout()
         self.yColumnComboBox = QComboBox(self)
-        self.yColumnComboBox.addItems(self.new_data.columns)
+        self.yColumnComboBox.addItems([col for col in self.new_data.columns if col != 'Date'])
         self.yColumnComboBox.currentIndexChanged.connect(self.updatePlot)
-        layout.addWidget(self.yColumnComboBox)
-
-        self.canvasLayout = QVBoxLayout()
-        layout.addLayout(self.canvasLayout)
+        self.plotLayout.addWidget(self.yColumnComboBox)
 
         self.canvas = PlotCanvas(self, width=5, height=4)
-        self.canvasLayout.addWidget(self.canvas)
+        self.plotLayout.addWidget(self.canvas)
+
+        # Add the layouts to the main layout
+        mainLayout.addLayout(self.predictionsLayout, 1)  # Give more space to the plot
+        mainLayout.addLayout(self.plotLayout, 3)  # Give more space to the plot
+
         self.updatePlot()
 
     def updatePlot(self):
         y_col = self.yColumnComboBox.currentText()
-        self.canvas.plot(self.new_data, y_col)
+        self.canvas.plot(self.new_data, y_col, self.predictions, self.selected_prediction)
+
+    def onPredictionSelected(self, item):
+        self.selected_prediction = item.data(Qt.UserRole)
+        self.updatePlot()

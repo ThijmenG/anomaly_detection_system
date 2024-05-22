@@ -183,7 +183,7 @@ class MainWindow(QMainWindow):
         print('got to runModel')
 
         new_data = data_loader(self.filePath)  # Load data using the data_loader function
-        print(new_data.head()  )
+        print(new_data.head())
 
         if self.noButton.isChecked():
             print('no button checked')
