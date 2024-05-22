@@ -32,6 +32,11 @@ def CSVsplitterMerger(df: pd.DataFrame):
         frame = df.loc[df["TagName"]==tag]
         frame = frame.rename(columns = {"Value":tag})
         frame = frame.drop(columns = ["TagName"])
+
+        # Fix the numerical values to use standard decimal marker and convert to float
+        frame[tag] = frame[tag].replace(to_replace={",":"."}, regex=True)
+        frame[tag] = pd.to_numeric(frame[tag])
+
         frames.append(frame)
 
     df_final = frames[0]
@@ -66,6 +71,7 @@ def dateTimeFix(df: pd.DataFrame):
             " nov ": "-11-",
             " dec ": "-12-"}
     df["Date"] = df["Date"].replace(to_replace=replDict, regex=True) # Standardize the date
+    df["Date"] = pd.to_datetime(df["Date"], dayfirst=True) # Turn the datetimes into correct type
 
     return df
 
