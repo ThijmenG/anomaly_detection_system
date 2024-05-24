@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 import joblib
+import os
 
 #Code to remove weekends from the dataset
 def clearWeekends(df: pd.DataFrame) -> pd.DataFrame:
@@ -29,6 +30,7 @@ def clearWeekends(df: pd.DataFrame) -> pd.DataFrame:
             toDrop.append(ind)
 
     newDf = df.drop(index = toDrop)
+
 
     return newDf
 
@@ -91,7 +93,7 @@ def scaled_train(df : pd.DataFrame):
     scaler = MinMaxScaler() #Initializing the scaler
     scaled_arr = scaler.fit_transform(df)
 
-    scaler_filename = "scaler.save" #Name of file used to save the scaling model
+    scaler_filename = "Model/scaler.save" #Name of file used to save the scaling model
     joblib.dump(scaler, scaler_filename)
 
     scaled_arr_final = scaled_arr.reshape(scaled_arr.shape[0],1,scaled_arr.shape[1]) #Reshaping the training for creating lagged values
@@ -109,14 +111,33 @@ def scaled_predict(df : pd.DataFrame):
     Returns:
         scaled_arr_final (np.array): Scaled prediction array for creating time lagged features
     """
-    
-    scaler_filename = 'scaler.save'
-    scaler = joblib.load(scaler_filename)
 
-    scaled_arr = scaler.transform(df)
-    scaled_arr_final = scaled_arr.reshape(scaled_arr.shape[0],1,scaled_arr.shape[1])
+    # Check the current working directory
+    print(f"Current working directory: {os.getcwd()}")
 
-    return scaled_arr_final
+    # Construct the absolute path to the scaler file
+    scaler_filename = os.path.join(os.getcwd(), 'Model', 'scaler.save')
+    print('Scaler file name:', scaler_filename)
+
+    # Check if the file exists
+    if not os.path.isfile(scaler_filename):
+        print(f"Scaler file does not exist: {scaler_filename}")
+
+    else:
+        try:
+            scaler = joblib.load(scaler_filename)
+            print('Scaler loaded')
+
+            scaled_arr = scaler.transform(df)
+            scaled_arr_final = scaled_arr.reshape(scaled_arr.shape[0], 1, scaled_arr.shape[1])
+        except FileNotFoundError as fnf_error:
+            print(f"File not found error: {fnf_error}")
+        except IOError as io_error:
+            print(f"IO error: {io_error}")
+        except Exception as e:
+            print(f"Failed to load scaler: {e}")
+
+        return scaled_arr_final
 
 
 def timelagged(rawdata : np.array, n_past : int):

@@ -15,7 +15,7 @@ def predict_results(original_df : pd.DataFrame, scaled_arr : np.array):
         error_df (pd.DataFrame) : Difference in model prediction with respect to original dataframe
     """
 
-    model = keras.models.load_model(f"model_1.keras") #Importing the trained model (Change the name according to the saved model)
+    model = keras.models.load_model(f"Model/model_1.keras") #Importing the trained model (Change the name according to the saved model)
     scaled_arr = scaled_arr.reshape((scaled_arr.shape[0], scaled_arr.shape[1], scaled_arr.shape[3])) #Reshaping according to the model input required
 
     predictions = model.predict(scaled_arr)
