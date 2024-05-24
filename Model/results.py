@@ -51,33 +51,7 @@ def anomaly_flag(df : pd.DataFrame):
 
     df['Anamoly'] = np.where((df['DC'] > 0.66) & (df['AE'] > 0.23), 1, 0) #Change the threshold for anomaly flag
 
-    return df
+    indices = df[df['Anamoly'] == 1].index #Getting the time values where anomalies arised
 
-def plot_anomaly(original_df : pd.DataFrame, flag_df : pd.DataFrame):
-    """
-    Plot the pressure sensor value with anomaly flag
 
-    Args:
-        original_df (pd.DataFrame) : Original dataframe that is used for anomaly detection
-        flag_df (pd.DataFrame) : Dataframe with calculated parameters (AE & DC) and anamoly flag
-
-    Returns:
-        fig (matplotlib.figure) : Figure with pressure sensor values plotted and anomalies as red vertical lines
-    """
-
-    indices = flag_df[flag_df['Anamoly'] == 1].index #Getting the time values where anomalies arised
-
-    # defining plot size
-    fig = plt.figure(figsize = (15, 15)) #Change the figure size
-
-    plt.plot(original_df['18BL02PT\\PV -  (Bar)'])
-
-    for date in indices:
-        plt.axvline(x = date, color = 'r',label='Anomaly') #Looping and plotting for each anomaly time value
-
-    plt.legend(['Pressure','Anamolies'], fontsize="10" , bbox_to_anchor = (0.4, 1) , ncol=2)
-
-    plt.xlabel("Timeline")
-    plt.ylabel("Pressure Sensor 2 (Bar)")
-
-    return fig
+    return indices
