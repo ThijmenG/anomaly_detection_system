@@ -29,7 +29,7 @@ def run_model(file_path, new_data, pressure_threshold=-0.3, moisture_upper=0, mo
         preprocess_data = scaled_predict(preprocess_data)
         print('Scaled data')
 
-        preprocess_data = timelagged(preprocess_data, n_past=10)  # Example value for n_past
+        preprocess_data = timelagged(preprocess_data, n_past=6)  # Example value for n_past
         print('Applied time lagging')
 
         print('Preprocessing done')
@@ -40,11 +40,8 @@ def run_model(file_path, new_data, pressure_threshold=-0.3, moisture_upper=0, mo
 
         anomaly_predictions = anomaly_flag(predictions)
         print('Anomaly detection done')
-
-        predictions = [datetime(2024, 4, 21, 23, 18),
-                       datetime(2024, 4, 21, 23, 18) + timedelta(days=1),
-                       datetime(2024, 4, 21, 23, 18) + timedelta(days=2)]
-
+        
+        print(f'Anomaly list : {anomaly_predictions}')
 
         return new_data, anomaly_predictions  # returning data to be plotted
 
