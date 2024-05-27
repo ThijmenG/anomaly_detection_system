@@ -46,8 +46,7 @@ def read_initial_data(df: pd.DataFrame):
     """
 
     df['Date'] = pd.to_datetime(df['Date'] , dayfirst = True)
-    df = clearWeekends(df)
-    df = df.set_index('Date',inplace=True)
+    df.set_index('Date',inplace=True)
     df.ffill(inplace=True)
 
     columns_to_select = ['18BL02PT\PV -  (Bar)','18BL03PT\PV -  (Bar)','18FI02LT01 -  (kg)','18OV01HM01_filtered -  (%)'] #Replace columns needed for filtering
@@ -78,7 +77,7 @@ def outlier_treatment(df: pd.DataFrame, pressure_threshold : float , moisture_up
 
     return df
 
-def scaled_train(df : pd.DataFrame):
+def scaled_train(df : pd.DataFrame, pressure_threshold : float):
     """
     Scales the training data and stores the scaling model for transforming latest prediction
     Should use this scaler only for training the model
@@ -93,14 +92,18 @@ def scaled_train(df : pd.DataFrame):
     scaler = MinMaxScaler() #Initializing the scaler
     scaled_arr = scaler.fit_transform(df)
 
-    scaler_filename = "Model/scaler.save" #Name of file used to save the scaling model
+    pressure_threshold = str(pressure_threshold)
+    pressure_threshold = pressure_threshold[1:]
+    pressure_threshold = pressure_threshold.replace('.', '_')
+
+    scaler_filename = f"Model/scaler{pressure_threshold}.save" #Name of file used to save the scaling model
     joblib.dump(scaler, scaler_filename)
 
     scaled_arr_final = scaled_arr.reshape(scaled_arr.shape[0],1,scaled_arr.shape[1]) #Reshaping the training for creating lagged values
 
     return scaled_arr_final
 
-def scaled_predict(df : pd.DataFrame):
+def scaled_predict(df : pd.DataFrame, pressure_threshold: float):
     """
     Scales the prediction data by importing the scaled model
     Should use this scaler only for anomaly detection
@@ -115,8 +118,12 @@ def scaled_predict(df : pd.DataFrame):
     # Check the current working directory
     print(f"Current working directory: {os.getcwd()}")
 
+    pressure_threshold = str(pressure_threshold)
+    pressure_threshold = pressure_threshold[1:]
+    pressure_threshold = pressure_threshold.replace('.', '_')
+
     # Construct the absolute path to the scaler file
-    scaler_filename = os.path.join(os.getcwd(), 'Model', 'scaler.save')
+    scaler_filename = os.path.join(os.getcwd(), 'Model', f'scaler_{pressure_threshold}.save')
     print('Scaler file name:', scaler_filename)
 
     # Check if the file exists

@@ -32,7 +32,7 @@ def lstm_model(ip_arr : np.array):
 
     return model
 
-def train_model(ip_arr : np.array, model : keras.src.models.functional.Functional):
+def train_model(ip_arr : np.array, model : keras.src.models.functional.Functional, pressure_threshold: float):
     """
     Training the model using the prepared data
     Requires data with lagged input features
@@ -47,12 +47,17 @@ def train_model(ip_arr : np.array, model : keras.src.models.functional.Functiona
 
     ip_arr = ip_arr.reshape((ip_arr.shape[0], ip_arr.shape[1], ip_arr.shape[3])) #Reshaping the input array to match the input dimensions of the model
 
-    model.compile(optimizer = 'adam' , loss = 'mae') #The optimizer and loss function can be changed
-    epochs_n = 150 #Parameters can be finetuned
-    batch_n = 50
+    optimizers = keras.optimizers.Adam(learning_rate=0.01)
+    model.compile(optimizer = optimizers , loss = 'mae') #The optimizer and loss function can be changed
+    epochs_n = 100 #Parameters can be finetuned
+    batch_n = 128
+
+    pressure_threshold = str(pressure_threshold)
+    pressure_threshold = pressure_threshold[1:]
+    pressure_threshold = pressure_threshold.replace('.', '_')
 
     history = model.fit(ip_arr , ip_arr , epochs = epochs_n , batch_size = batch_n , validation_split = 0.15).history
-    model.save(f"model_1.keras") #Location for saving the model file
+    model.save(f"model_{pressure_threshold}.keras") #Location for saving the model file
 
     return history
 

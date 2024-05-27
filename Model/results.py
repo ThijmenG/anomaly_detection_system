@@ -3,7 +3,7 @@ import pandas as pd
 import keras as keras
 import matplotlib.pyplot as plt
 
-def predict_results(original_df : pd.DataFrame, scaled_arr : np.array):
+def predict_results(original_df : pd.DataFrame, scaled_arr : np.array, pressure_threshold : float):
     """
     Given the original dataframe and scaled input form, it predicts the results and returns a dataframe with error
 
@@ -15,7 +15,11 @@ def predict_results(original_df : pd.DataFrame, scaled_arr : np.array):
         error_df (pd.DataFrame) : Difference in model prediction with respect to original dataframe
     """
 
-    model = keras.models.load_model(f"Model/model_1.keras") #Importing the trained model (Change the name according to the saved model)
+    pressure_threshold = str(pressure_threshold)
+    pressure_threshold = pressure_threshold[1:]
+    pressure_threshold = pressure_threshold.replace('.', '_')
+
+    model = keras.models.load_model(f"Model/model_{pressure_threshold}.keras") #Importing the trained model (Change the name according to the saved model)
     scaled_arr = scaled_arr.reshape((scaled_arr.shape[0], scaled_arr.shape[1], scaled_arr.shape[3])) #Reshaping according to the model input required
 
     predictions = model.predict(scaled_arr)
