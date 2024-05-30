@@ -15,8 +15,6 @@ def clearWeekends(df: pd.DataFrame) -> pd.DataFrame:
     Returns:
         df (pd.Dataframe): A pandas dataframe with the weekend dates removed
     """
-    
-    df['Date'] = pd.to_datetime(df['Date'] , dayfirst = True)
 
     toDrop = []
     for ind, row in df.iterrows():
@@ -47,6 +45,7 @@ def read_initial_data(df: pd.DataFrame):
         df (pd.DataFrame): Dataframe with index set, weekends removed, columns filtered and null values filled
     """
 
+    df['Date'] = pd.to_datetime(df['Date'] , dayfirst = True)
     df.set_index('Date',inplace=True)
     df.ffill(inplace=True)
 
