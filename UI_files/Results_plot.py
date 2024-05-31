@@ -95,7 +95,14 @@ class PlotWindow(QMainWindow):
         # Create a layout for the plot
         self.plotLayout = QVBoxLayout()
         self.yColumnComboBox = QComboBox(self)
-        self.yColumnComboBox.addItems([col for col in self.new_data.columns if col != 'Date'])
+        # List of columns to be included in the plot
+        columns_to_plot = ['18BL02PT\\PV -  (Bar)', '18BL03PT\\PV -  (Bar)', '18FI02LT01 -  (kg)', '18OV01HM01_filtered -  (%)']
+
+        # Filter the columns of new_data to include only the specified columns
+        columns_in_data = [col for col in columns_to_plot if col in self.new_data.columns]
+
+        # Add items to the combo box
+        self.yColumnComboBox.addItems(columns_in_data)
         self.yColumnComboBox.currentIndexChanged.connect(self.updatePlot)
         self.plotLayout.addWidget(self.yColumnComboBox)
 

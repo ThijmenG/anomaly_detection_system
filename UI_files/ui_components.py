@@ -1,20 +1,16 @@
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QDragEnterEvent, QDropEvent
-import os
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
-from PyQt5.QtWidgets import QSizePolicy
-import pandas as pd
-from PyQt5.QtWidgets import (QMainWindow, QLabel, QPushButton, QVBoxLayout, QWidget, QFileDialog,
-                             QRadioButton, QGroupBox, QHBoxLayout, QLineEdit, QApplication, QDesktopWidget)
 from PyQt5.QtCore import Qt, QDate
-from PyQt5.QtWidgets import QDateEdit, QSpinBox, QLineEdit
+from PyQt5.QtGui import QDragEnterEvent, QDropEvent
+from PyQt5.QtWidgets import (QMainWindow, QLabel, QPushButton, QVBoxLayout, QWidget, QFileDialog,
+                             QRadioButton, QGroupBox, QHBoxLayout, QLineEdit, QApplication, QDesktopWidget,
+                             QDateEdit, QSpinBox, QScrollArea)
+
 from .data_selection import DataSelectionLabel
 from .Results_plot import PlotWindow
 from .model_handler import run_model
 from Model.data_loader import data_loader
-from UI_files.resource_path import resource_path  # Import resource_path
-import numpy as np
+from UI_files.resource_path import resource_path
+import pandas as pd
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -22,8 +18,8 @@ class MainWindow(QMainWindow):
         self.initUI()
         self.dateInputs = []
         self.offlineHoursInputs = []
-        self.clogLocationInputs = []  # Add this line
-        self.filePath = None  # Initialize self.filePath to None
+        self.clogLocationInputs = []
+        self.filePath = None
 
     def initUI(self):
         self.setWindowTitle('Model Runner Application')
@@ -38,15 +34,22 @@ class MainWindow(QMainWindow):
         # Error message label
         self.errorMessageLabel = QLabel(self)
         self.errorMessageLabel.setStyleSheet("color: red;")
-        self.errorMessageLabel.hide()  # Initially hide the error message label
+        self.errorMessageLabel.hide()
         self.layout.addWidget(self.errorMessageLabel)
 
         # Cloggage question group
         self.initClogQuestionGroup()
 
-        # Layout for dynamically adding date inputs
-        self.dateInputLayout = QVBoxLayout()
-        self.layout.addLayout(self.dateInputLayout)
+        # Scroll area for dynamically adding date inputs
+        self.scrollArea = QScrollArea(self)
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollAreaContent = QWidget(self.scrollArea)
+        self.scrollAreaLayout = QVBoxLayout(self.scrollAreaContent)
+        self.scrollArea.setWidget(self.scrollAreaContent)
+        self.layout.addWidget(self.scrollArea)
+
+        # Buttons to add and remove date inputs
+        self.initDateButtons()
 
         # Button to run the model
         self.initRunModelButton()
@@ -54,7 +57,7 @@ class MainWindow(QMainWindow):
     def initFileDrop(self):
         self.fileDropLabel = DataSelectionLabel('Drop your file here or click to select', self)
         self.fileDropLabel.fileSelected.connect(self.enableRunModelButton)
-        self.fileDropLabel.invalidFileSelected.connect(self.showErrorMessage)  # Connect signal to slot
+        self.fileDropLabel.invalidFileSelected.connect(self.showErrorMessage)
         self.layout.addWidget(self.fileDropLabel)
 
     def showErrorMessage(self, message):
@@ -71,18 +74,14 @@ class MainWindow(QMainWindow):
         clogLayout.addWidget(self.noButton)
         clogLayout.addStretch(1)
         self.clogQuestionGroup.setLayout(clogLayout)
-        self.clogQuestionGroup.setFixedHeight(100)  # Fix the height to prevent resizing
+        self.clogQuestionGroup.setFixedHeight(100)
         self.layout.addWidget(self.clogQuestionGroup)
 
-        self.addDateButton = QPushButton('Add Date', self)
-        self.addDateButton.clicked.connect(self.addDateInput)
-        self.addDateButton.setEnabled(False)
         self.yesButton.toggled.connect(self.enableAddDate)
-        self.layout.addWidget(self.addDateButton)
 
     def enableRunModelButton(self, filePath):
         self.filePath = filePath
-        self.errorMessageLabel.hide()  # Hide error message when a valid file is selected
+        self.errorMessageLabel.hide()
         self.runModelButton.setEnabled(True)
 
     def initRunModelButton(self):
@@ -93,8 +92,7 @@ class MainWindow(QMainWindow):
 
     def initHeaderRow(self):
         headerLayout = QHBoxLayout()
-        headerLayout.setContentsMargins(0, 0, 0, -10)  # Reduce the bottom margin to bring headers closer to the rows
-        headerLayout.setSpacing(1)
+        headerLayout.setContentsMargins(0, 0, 0, -10)
 
         dateLabel = QLabel("Date")
         hoursLabel = QLabel("Offline Hours")
@@ -104,7 +102,7 @@ class MainWindow(QMainWindow):
         headerLayout.addWidget(hoursLabel, 1)
         headerLayout.addWidget(locationLabel, 3)
 
-        self.dateInputLayout.addLayout(headerLayout)
+        self.scrollAreaLayout.addLayout(headerLayout)
 
     def centerWindow(self):
         qr = self.frameGeometry()
@@ -114,52 +112,73 @@ class MainWindow(QMainWindow):
 
     def enableAddDate(self, enabled):
         self.addDateButton.setEnabled(enabled)
+        self.removeDateButton.setVisible(enabled)  # Show or hide the remove button based on the toggle
+
         if enabled:
-            # 'Yes' is selected, add a standard row
-            self.addDateInput()
+            if not self.dateInputs:
+                self.addDateInput()
         else:
-            # 'No' is selected, remove all date rows
-            while self.dateInputLayout.count():
-                child = self.dateInputLayout.takeAt(0)
-                if child:
-                    # Check if the child is a layout (which contains the date, hours, and location inputs)
-                    if isinstance(child, QHBoxLayout):
-                        while child.count():
-                            subChild = child.takeAt(0).widget()
-                            if subChild:
-                                subChild.deleteLater()
-                    else:
-                        child.widget().deleteLater()
+            self.clearDateInputs()
+
+    def clearDateInputs(self):
+        while self.scrollAreaLayout.count():
+            child = self.scrollAreaLayout.takeAt(0)
+            if child:
+                if isinstance(child, QHBoxLayout):
+                    while child.count():
+                        subChild = child.takeAt(0).widget()
+                        if subChild:
+                            subChild.deleteLater()
+                else:
+                    child.widget().deleteLater()
+        self.dateInputs.clear()
+        self.offlineHoursInputs.clear()
+        self.clogLocationInputs.clear()
 
     def addDateInput(self):
-        if self.dateInputLayout.count() == 0:
+        if not self.dateInputs:
             self.initHeaderRow()
 
-        rowLayout = QHBoxLayout()
-        rowLayout.setContentsMargins(0, 5, 0, 5)  # Adjust top and bottom margins to reduce space
+        if len(self.dateInputs) < 5:
+            rowLayout = QHBoxLayout()
+            rowLayout.setContentsMargins(0, 5, 0, 5)
 
-        dateInput = QDateEdit()
-        dateInput.setDate(QDate.currentDate())
-        dateInput.setCalendarPopup(True)
-        dateInput.dateChanged.connect(self.checkInputs)  # Connect the dateChanged signal to checkInputs
-        rowLayout.addWidget(dateInput, 2)
-        self.dateInputs.append(dateInput)  # Store a reference to the dateInput
+            dateInput = QDateEdit()
+            dateInput.setDate(QDate.currentDate())
+            dateInput.setCalendarPopup(True)
+            dateInput.dateChanged.connect(self.checkInputs)
+            rowLayout.addWidget(dateInput, 2)
+            self.dateInputs.append(dateInput)
 
-        offlineHoursInput = QSpinBox()
-        offlineHoursInput.setRange(0, 24)
-        offlineHoursInput.valueChanged.connect(self.checkInputs)  # Connect the valueChanged signal to checkInputs
-        rowLayout.addWidget(offlineHoursInput, 1)
-        self.offlineHoursInputs.append(offlineHoursInput)  # Store a reference to the offlineHoursInput
+            offlineHoursInput = QSpinBox()
+            offlineHoursInput.setRange(0, 24)
+            offlineHoursInput.valueChanged.connect(self.checkInputs)
+            rowLayout.addWidget(offlineHoursInput, 1)
+            self.offlineHoursInputs.append(offlineHoursInput)
 
-        clogLocationInput = QLineEdit()
-        clogLocationInput.setPlaceholderText("Enter clog location (optional)")
-        rowLayout.addWidget(clogLocationInput, 3)
-        self.clogLocationInputs.append(clogLocationInput)  # Add this line
+            clogLocationInput = QLineEdit()
+            clogLocationInput.setPlaceholderText("Enter clog location (optional)")
+            rowLayout.addWidget(clogLocationInput, 3)
+            self.clogLocationInputs.append(clogLocationInput)
 
-        self.dateInputLayout.addLayout(rowLayout)
+            self.scrollAreaLayout.addLayout(rowLayout)
+            self.removeDateButton.setVisible(True)  # Ensure the remove button is visible
+
+        self.scrollArea.setFixedHeight(5 * 35)  # Approximate height for 5 rows
+
+    def removeDateInput(self):
+        if self.dateInputs:
+            self.dateInputs.pop().deleteLater()
+            self.offlineHoursInputs.pop().deleteLater()
+            self.clogLocationInputs.pop().deleteLater()
+            self.scrollAreaLayout.takeAt(self.scrollAreaLayout.count() - 1).deleteLater()
+
+            if not self.dateInputs:
+                self.clearDateInputs()
+                self.removeDateButton.setVisible(False)
 
     def checkInputs(self):
-        if self.filePath is None:  # Check if a file has been selected
+        if not self.filePath:
             self.runModelButton.setEnabled(False)
             return
 
@@ -172,8 +191,8 @@ class MainWindow(QMainWindow):
     def runModel(self):
         print('got to runModel')
 
-        resolved_file_path = resource_path(self.filePath)  # Resolve the file path using resource_path
-        new_data = data_loader(resolved_file_path)  # Load data using the data_loader function
+        resolved_file_path = resource_path(self.filePath)
+        new_data = data_loader(resolved_file_path)
         print(new_data.head())
 
         if self.noButton.isChecked():
@@ -192,3 +211,17 @@ class MainWindow(QMainWindow):
 
             self.resultWindow = PlotWindow(processed_data, predictions, clog_data=clog_data)
             self.resultWindow.show()
+
+    def initDateButtons(self):
+        dateButtonLayout = QHBoxLayout()
+        self.addDateButton = QPushButton('Add Date', self)
+        self.addDateButton.setEnabled(False)
+        self.addDateButton.clicked.connect(self.addDateInput)
+        dateButtonLayout.addWidget(self.addDateButton)
+
+        self.removeDateButton = QPushButton('Remove Date', self)
+        self.removeDateButton.setVisible(False)  # Initially hide the remove button
+        self.removeDateButton.clicked.connect(self.removeDateInput)
+        dateButtonLayout.addWidget(self.removeDateButton)
+
+        self.layout.addLayout(dateButtonLayout)
