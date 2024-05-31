@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from UI_files.resource_path import resource_path
 
 
-def predict_results(original_df: pd.DataFrame, scaled_arr: np.array, pressure_threshold = -0.3):
+def predict_results(original_df: pd.DataFrame, scaled_arr: np.array, pressure_threshold : float):
     """
     Given the original dataframe and scaled input form, it predicts the results and returns a dataframe with error
 
@@ -17,9 +17,9 @@ def predict_results(original_df: pd.DataFrame, scaled_arr: np.array, pressure_th
     Returns:
         error_df (pd.DataFrame): Difference in model prediction with respect to original dataframe
     """
-
+    
     pressure_threshold_str = str(pressure_threshold)[1:].replace('.', '_')
-    model_path = resource_path(f"Model/model_{pressure_threshold_str}.keras")  # Importing the trained model
+    model_path = resource_path(rf"Source_file\trained_model\model_{pressure_threshold_str}.keras")  # Importing the trained model
 
     model = keras.models.load_model(model_path)
     scaled_arr = scaled_arr.reshape((scaled_arr.shape[0], scaled_arr.shape[1],
@@ -33,7 +33,7 @@ def predict_results(original_df: pd.DataFrame, scaled_arr: np.array, pressure_th
         for j in range(error.shape[1]):
             calculated_error[i + j] += error[i, j]
     for i in range(len(calculated_error)):
-        calculated_error[i] = calculated_error[i] / min(i + 1, 6,
+        calculated_error[i] = calculated_error[i] / min(i + 1, 2,
                                                         len(calculated_error) - i)  # loop for error calculation for rows (time frames)
 
     error_df = pd.DataFrame({'Error': calculated_error})
@@ -42,7 +42,7 @@ def predict_results(original_df: pd.DataFrame, scaled_arr: np.array, pressure_th
     return error_df
 
 
-def anomaly_flag(df: pd.DataFrame):
+def anomaly_flag(df: pd.DataFrame, pressure_threshold: float):
     """
     Given a dataframe with error from model, returns anomaly flag based on two parameters (AE: Average Error & DC: Danger Coefficient)
 
@@ -53,13 +53,28 @@ def anomaly_flag(df: pd.DataFrame):
         df (pd.DataFrame): Dataframe with calculated parameters (AE & DC) and anomaly flag
     """
 
-    df['AE'] = df['Error'].rolling(6, min_periods=1).sum() / 6  # Taking a rolling mean of error based on last 6 values
-    df['flag'] = np.where(df['Error'] > 0.27, 1, 0)
-    df['DC'] = df['flag'].rolling(6,
-                                  min_periods=1).sum() / 6  # Taking a rolling mean of error flag based on last 6 values
-    df.drop('flag', axis=1, inplace=True)
+    match pressure_threshold:
 
-    df['Anomaly'] = np.where((df['DC'] > 0.66) & (df['AE'] > 0.23), 1, 0)  # Change the threshold for anomaly flag
+        case -0.2:
+            df['AE'] = df['Error'].rolling(6, min_periods=1).sum() / 6  # Taking a rolling mean of error based on last 6 values
+            df['flag'] = np.where(df['Error'] > 0.18, 1, 0)
+            df['DC'] = df['flag'].rolling(6, min_periods=1).sum() / 6  # Taking a rolling mean of error flag based on last 6 values
+            df.drop('flag', axis=1, inplace=True)
+            df['Anomaly'] = np.where((df['DC'] > 0.6) & (df['AE'] > 0.18), 1, 0)  # Change the threshold for anomaly flag
+
+        case -0.25:
+            df['AE'] = df['Error'].rolling(6, min_periods=1).sum() / 6  # Taking a rolling mean of error based on last 6 values
+            df['flag'] = np.where(df['Error'] > 0.16, 1, 0)
+            df['DC'] = df['flag'].rolling(6, min_periods=1).sum() / 6  # Taking a rolling mean of error flag based on last 6 values
+            df.drop('flag', axis=1, inplace=True)
+            df['Anomaly'] = np.where((df['DC'] > 0.6) & (df['AE'] > 0.17), 1, 0)  # Change the threshold for anomaly flag
+
+        case -0.3:
+            df['AE'] = df['Error'].rolling(6, min_periods=1).sum() / 6  # Taking a rolling mean of error based on last 6 values
+            df['flag'] = np.where(df['Error'] > 0.12, 1, 0)
+            df['DC'] = df['flag'].rolling(6, min_periods=1).sum() / 6  # Taking a rolling mean of error flag based on last 6 values
+            df.drop('flag', axis=1, inplace=True)
+            df['Anomaly'] = np.where((df['DC'] > 0.6) & (df['AE'] > 0.16), 1, 0)  # Change the threshold for anomaly flag
 
     indices = df[df['Anomaly'] == 1].index  # Getting the time values where anomalies arose
 
