@@ -1,11 +1,13 @@
 import pandas as pd
+import os
+from UI_files.resource_path import resource_path
 
 def CSVstartChecker(file_path: str):
     """
-    Reads a file and returns the number of the first line contining "DateTime,TagName,Value", which is where the time indexed data starts.
+    Reads a file and returns the number of the first line containing "DateTime,TagName,Value", which is where the time indexed data starts.
 
     Args:
-        file_path (srt): The path to the file to have its start line checked
+        file_path (str): The path to the file to have its start line checked
 
     Returns:
         int: Line number of the first line containing "DateTime,TagName,Value"
@@ -26,23 +28,23 @@ def CSVsplitterMerger(df: pd.DataFrame):
     Returns:
         df (pd.DataFrame): Dataframe containing the merged data
     """
-    tags = pd.unique(df["TagName"]) # List of tags in the export
+    tags = pd.unique(df["TagName"])
     frames = []
-    for tag in tags: # Separates each tag into a different dataframe
-        frame = df.loc[df["TagName"]==tag]
-        frame = frame.rename(columns = {"Value":tag})
-        frame = frame.drop(columns = ["TagName"])
+    for tag in tags:
+        frame = df.loc[df["TagName"] == tag]
+        frame = frame.rename(columns={"Value": tag})
+        frame = frame.drop(columns=["TagName"])
 
         # Fix the numerical values to use standard decimal marker and convert to float
-        frame[tag] = frame[tag].replace(to_replace={",":"."}, regex=True)
+        frame[tag] = frame[tag].replace(to_replace={",": "."}, regex=True)
         frame[tag] = pd.to_numeric(frame[tag])
 
         frames.append(frame)
 
     df_final = frames[0]
-    if len(frames)>1: # Check if there are multiple frames which need to be merged
-        for i in range(1,len(frames)): # Merges all dataframes together on date and time
-            df_final = df_final.merge(frames[i], on = "DateTime")
+    if len(frames) > 1:
+        for i in range(1, len(frames)):
+            df_final = df_final.merge(frames[i], on="DateTime")
 
     return df_final
 
@@ -56,22 +58,24 @@ def dateTimeFix(df: pd.DataFrame):
     Returns:
         df (pd.DataFrame): Dataframe with the dates and column name fixed
     """
-    df = df.rename(columns = {"DateTime":"Date"}) # Fix the date column tag
+    df = df.rename(columns={"DateTime": "Date"})
 
-    replDict = {" jan ": "-01-",
-            " feb ": "-02-",
-            " mrt ": "-03-",
-            " apr ": "-04-",
-            " mei ": "-05-",
-            " jun ": "-06-",
-            " jul ": "-07-",
-            " aug ": "-08-",
-            " sep ": "-09-",
-            " okt ": "-10-",
-            " nov ": "-11-",
-            " dec ": "-12-"}
-    df["Date"] = df["Date"].replace(to_replace=replDict, regex=True) # Standardize the date
-    df["Date"] = pd.to_datetime(df["Date"], dayfirst=True) # Turn the datetimes into correct type
+    replDict = {
+        " jan ": "-01-",
+        " feb ": "-02-",
+        " mrt ": "-03-",
+        " apr ": "-04-",
+        " mei ": "-05-",
+        " jun ": "-06-",
+        " jul ": "-07-",
+        " aug ": "-08-",
+        " sep ": "-09-",
+        " okt ": "-10-",
+        " nov ": "-11-",
+        " dec ": "-12-"
+    }
+    df["Date"] = df["Date"].replace(to_replace=replDict, regex=True)
+    df["Date"] = pd.to_datetime(df["Date"], dayfirst=True)
 
     return df
 
@@ -83,9 +87,9 @@ def checkData(df: pd.DataFrame):
         df (pd.DataFrame): Dataframe to be checked
 
     Returns:
-        bool: Wether all columns have been found
+        bool: Whether all columns have been found
     """
-    reqColumns = ['18BL02PT\\PV -  (Bar)','18BL03PT\\PV -  (Bar)','18FI02LT01 -  (kg)','18OV01HM01_filtered -  (%)']
+    reqColumns = ['18BL02PT\\PV -  (Bar)', '18BL03PT\\PV -  (Bar)', '18FI02LT01 -  (kg)', '18OV01HM01_filtered -  (%)']
     for col in reqColumns:
         if col not in df.columns:
             return False
@@ -104,26 +108,24 @@ def data_loader(file_path: str):
     Raises:
     ValueError: If the file format is not supported.
     """
+    file_path = resource_path(file_path)
     if file_path.endswith('.csv'):
         startLine = CSVstartChecker(file_path)
         raw = pd.read_csv(file_path, skiprows=startLine)
         df = CSVsplitterMerger(raw)
     elif file_path.endswith('.xlsx'):
-        testDf = pd.read_excel(file_path, skiprows=range(5)) # Read everything including the sensor types
-        emptyRow = testDf.isnull().all(axis=1) # Find where the sensor preamble ends
-        n = testDf[emptyRow].index[0] # Mark the number of rows in the sensor preamble
+        testDf = pd.read_excel(file_path, skiprows=range(5))
+        emptyRow = testDf.isnull().all(axis=1)
+        n = testDf[emptyRow].index[0]
 
-        # Read the actual data
-        df = pd.read_excel(file_path, skiprows=range(7+n))
-        df = df.rename(columns={"Unnamed: 1":"DateTime"})
+        df = pd.read_excel(file_path, skiprows=range(7 + n))
+        df = df.rename(columns={"Unnamed: 1": "DateTime"})
         df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
     else:
         raise ValueError("Unsupported file format. Please select a CSV or Excel file.")
-    
+
     df = dateTimeFix(df)
     columnCheck = checkData(df)
     if not columnCheck:
         raise ValueError("Not all required columns are present in the dataset.")
     return df
-
-
