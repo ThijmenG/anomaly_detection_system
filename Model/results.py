@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from UI_files.resource_path import resource_path
 
 
-def predict_results(original_df: pd.DataFrame, scaled_arr: np.array, pressure_threshold: float):
+def predict_results(original_df: pd.DataFrame, scaled_arr: np.array, pressure_threshold = -0.3):
     """
     Given the original dataframe and scaled input form, it predicts the results and returns a dataframe with error
 
