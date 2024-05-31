@@ -13,9 +13,8 @@ from .data_selection import DataSelectionLabel
 from .Results_plot import PlotWindow
 from .model_handler import run_model
 from Model.data_loader import data_loader
+from UI_files.resource_path import resource_path  # Import resource_path
 import numpy as np
-
-
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -62,7 +61,6 @@ class MainWindow(QMainWindow):
         self.errorMessageLabel.setText(message)
         self.errorMessageLabel.show()
 
-
     def initClogQuestionGroup(self):
         self.clogQuestionGroup = QGroupBox("Has there been any cloggages in this period?")
         clogLayout = QHBoxLayout()
@@ -81,7 +79,6 @@ class MainWindow(QMainWindow):
         self.addDateButton.setEnabled(False)
         self.yesButton.toggled.connect(self.enableAddDate)
         self.layout.addWidget(self.addDateButton)
-
 
     def enableRunModelButton(self, filePath):
         self.filePath = filePath
@@ -108,12 +105,6 @@ class MainWindow(QMainWindow):
         headerLayout.addWidget(locationLabel, 3)
 
         self.dateInputLayout.addLayout(headerLayout)
-
-    def centerWindow(self):
-        qr = self.frameGeometry()
-        cp = QDesktopWidget().availableGeometry().center()
-        qr.moveCenter(cp)
-        self.setGeometry(qr)
 
     def centerWindow(self):
         qr = self.frameGeometry()
@@ -165,7 +156,6 @@ class MainWindow(QMainWindow):
         rowLayout.addWidget(clogLocationInput, 3)
         self.clogLocationInputs.append(clogLocationInput)  # Add this line
 
-
         self.dateInputLayout.addLayout(rowLayout)
 
     def checkInputs(self):
@@ -182,12 +172,13 @@ class MainWindow(QMainWindow):
     def runModel(self):
         print('got to runModel')
 
-        new_data = data_loader(self.filePath)  # Load data using the data_loader function
+        resolved_file_path = resource_path(self.filePath)  # Resolve the file path using resource_path
+        new_data = data_loader(resolved_file_path)  # Load data using the data_loader function
         print(new_data.head())
 
         if self.noButton.isChecked():
             print('no button checked')
-            processed_data, predictions = run_model(self.filePath, new_data)
+            processed_data, predictions = run_model(resolved_file_path, new_data)
             self.resultWindow = PlotWindow(processed_data, predictions)
             self.resultWindow.show()
         else:
@@ -197,9 +188,7 @@ class MainWindow(QMainWindow):
                 'Clog Location': [clogLocationInput.text() for clogLocationInput in self.clogLocationInputs]
             }
             clog_data = pd.DataFrame(data)
-            processed_data, predictions = run_model(self.filePath, new_data)
+            processed_data, predictions = run_model(resolved_file_path, new_data)
 
             self.resultWindow = PlotWindow(processed_data, predictions, clog_data=clog_data)
             self.resultWindow.show()
-
-
