@@ -37,7 +37,7 @@ def predict_results(original_df: pd.DataFrame, scaled_arr: np.array, pressure_th
                                                         len(calculated_error) - i)  # loop for error calculation for rows (time frames)
 
     error_df = pd.DataFrame({'Error': calculated_error})
-    error_df.set_index(original_df["Date"], inplace=True)
+    error_df.set_index(original_df.index, inplace=True)
 
     return error_df
 
