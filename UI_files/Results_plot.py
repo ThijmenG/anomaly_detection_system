@@ -16,7 +16,7 @@ class PlotCanvas(FigureCanvas):
         FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
 
-    def plot(self, new_data, y_col, predictions=None, selected_prediction=None):
+    def plot(self, new_data, y_col, predictions=None, selected_prediction=None, clogs=None):
         try:
             self.axes.clear()
 
@@ -43,6 +43,12 @@ class PlotCanvas(FigureCanvas):
                 for prediction in predictions:
                     line_width = 2 if prediction == selected_prediction else 1
                     self.axes.axvline(x=prediction, color='r', linestyle='--', linewidth=line_width)
+
+            # Add vertical lines for each datetime in clog_data
+            if clogs is not None:
+                clog_dates = clogs["Date"]
+                for clog in clog_dates:
+                    self.axes.axvline(x=clog, color='b', linestyle='-', linewidth=2)
 
             # Set x-axis ticks to show only 20 evenly spaced points
             x_ticks = np.linspace(0, len(new_data.index) - 1, 20, dtype=int)
@@ -117,7 +123,7 @@ class PlotWindow(QMainWindow):
 
     def updatePlot(self):
         y_col = self.yColumnComboBox.currentText()
-        self.canvas.plot(self.new_data, y_col, self.predictions, self.selected_prediction)
+        self.canvas.plot(self.new_data, y_col, self.predictions, self.selected_prediction, self.clog_data)
 
     def onPredictionSelected(self, item):
         self.selected_prediction = item.data(Qt.UserRole)
