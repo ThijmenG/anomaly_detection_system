@@ -1,11 +1,10 @@
 from PyQt5.QtWidgets import QSizePolicy, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QLabel, QListWidget
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QListWidgetItem
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 import pandas as pd
 import numpy as np
-
 
 class PlotCanvas(FigureCanvas):
     def __init__(self, parent=None, width=5, height=4, dpi=100):
@@ -115,10 +114,16 @@ class PlotWindow(QMainWindow):
         self.canvas = PlotCanvas(self, width=5, height=4)
         self.plotLayout.addWidget(self.canvas)
 
+        # plot toolbar
+        self.toolbar = NavigationToolbar(self.canvas, self)
+        self.toolLayout = QVBoxLayout()
+        self.toolLayout.addWidget(self.toolbar)
+        self.plotLayout.addLayout(self.toolLayout)
+
         # Add the layouts to the main layout
         mainLayout.addLayout(self.predictionsLayout, 1)  # Give more space to the plot
         mainLayout.addLayout(self.plotLayout, 3)  # Give more space to the plot
-
+        
         self.updatePlot()
 
     def updatePlot(self):
