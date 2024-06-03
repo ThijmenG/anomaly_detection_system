@@ -2,7 +2,7 @@ from PyQt5.QtCore import Qt, QDate
 from PyQt5.QtGui import QDragEnterEvent, QDropEvent
 from PyQt5.QtWidgets import (QMainWindow, QLabel, QPushButton, QVBoxLayout, QWidget, QFileDialog,
                              QRadioButton, QGroupBox, QHBoxLayout, QLineEdit, QApplication, QDesktopWidget,
-                             QDateEdit, QSpinBox, QScrollArea)
+                             QDateEdit, QSpinBox, QScrollArea, QComboBox)
 
 from .data_selection import DataSelectionLabel
 from .Results_plot import PlotWindow
@@ -27,6 +27,9 @@ class MainWindow(QMainWindow):
         self.centralWidget = QWidget(self)
         self.setCentralWidget(self.centralWidget)
         self.layout = QVBoxLayout(self.centralWidget)
+
+        # Pressure threshold dropdown
+        self.initPressureThresholdDropdown()
 
         # File drop label
         self.initFileDrop()
@@ -53,6 +56,17 @@ class MainWindow(QMainWindow):
 
         # Button to run the model
         self.initRunModelButton()
+
+    def initPressureThresholdDropdown(self):
+        pressureLayout = QHBoxLayout()
+        pressureLabel = QLabel("Select Pressure Threshold:")
+        self.pressureDropdown = QComboBox(self)
+        self.pressureDropdown.addItems(["-0.2", "-0.25", "-0.3"])
+        self.pressureDropdown.setCurrentIndex(1)  # Set "Medium" as the default selection
+
+        pressureLayout.addWidget(pressureLabel)
+        pressureLayout.addWidget(self.pressureDropdown)
+        self.layout.addLayout(pressureLayout)
 
     def initFileDrop(self):
         self.fileDropLabel = DataSelectionLabel('Drop your file here or click to select', self)
@@ -195,9 +209,12 @@ class MainWindow(QMainWindow):
         new_data = data_loader(resolved_file_path)
         print(new_data.head())
 
+        pressure_threshold = float(self.pressureDropdown.currentText())
+
+
         if self.noButton.isChecked():
             print('no button checked')
-            processed_data, predictions = run_model(resolved_file_path, new_data)
+            processed_data, predictions = run_model(resolved_file_path, new_data, pressure_threshold)
             self.resultWindow = PlotWindow(processed_data, predictions)
             self.resultWindow.show()
         else:
