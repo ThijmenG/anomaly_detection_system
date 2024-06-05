@@ -57,24 +57,24 @@ def anomaly_flag(df: pd.DataFrame, pressure_threshold: float):
 
         case -0.2:
             df['AE'] = df['Error'].rolling(6, min_periods=1).sum() / 6  # Taking a rolling mean of error based on last 6 values
-            df['flag'] = np.where(df['Error'] > 0.18, 1, 0)
+            df['flag'] = np.where(df['Error'] > 0.2, 1, 0)
             df['DC'] = df['flag'].rolling(6, min_periods=1).sum() / 6  # Taking a rolling mean of error flag based on last 6 values
             df.drop('flag', axis=1, inplace=True)
-            df['Anomaly'] = np.where((df['DC'] > 0.6) & (df['AE'] > 0.18), 1, 0)  # Change the threshold for anomaly flag
+            df['Anomaly'] = np.where((df['DC'] > 0.6) & (df['AE'] > 0.22), 1, 0)  # Change the threshold for anomaly flag
 
         case -0.25:
             df['AE'] = df['Error'].rolling(6, min_periods=1).sum() / 6  # Taking a rolling mean of error based on last 6 values
-            df['flag'] = np.where(df['Error'] > 0.16, 1, 0)
+            df['flag'] = np.where(df['Error'] > 0.2, 1, 0)
             df['DC'] = df['flag'].rolling(6, min_periods=1).sum() / 6  # Taking a rolling mean of error flag based on last 6 values
             df.drop('flag', axis=1, inplace=True)
-            df['Anomaly'] = np.where((df['DC'] > 0.6) & (df['AE'] > 0.17), 1, 0)  # Change the threshold for anomaly flag
+            df['Anomaly'] = np.where((df['DC'] > 0.6) & (df['AE'] > 0.2), 1, 0)  # Change the threshold for anomaly flag
 
         case -0.3:
             df['AE'] = df['Error'].rolling(6, min_periods=1).sum() / 6  # Taking a rolling mean of error based on last 6 values
-            df['flag'] = np.where(df['Error'] > 0.12, 1, 0)
+            df['flag'] = np.where(df['Error'] > 0.2, 1, 0)
             df['DC'] = df['flag'].rolling(6, min_periods=1).sum() / 6  # Taking a rolling mean of error flag based on last 6 values
             df.drop('flag', axis=1, inplace=True)
-            df['Anomaly'] = np.where((df['DC'] > 0.6) & (df['AE'] > 0.16), 1, 0)  # Change the threshold for anomaly flag
+            df['Anomaly'] = np.where((df['DC'] > 0.6) & (df['AE'] > 0.2), 1, 0)  # Change the threshold for anomaly flag
 
     indices = df[df['Anomaly'] == 1].index  # Getting the time values where anomalies arose
 

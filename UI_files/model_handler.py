@@ -8,7 +8,7 @@ from Model.model_builder import lstm_model, train_model , plot_model
 from UI_files.resource_path import resource_path
 
 
-def run_model(file_path, new_data, pressure_threshold=-0.3):
+def run_model(file_path, new_data, pressure_threshold : float):
     file_path = resource_path(file_path)
     print(f"Running model with file: {file_path}")
 
@@ -47,7 +47,7 @@ def run_model(file_path, new_data, pressure_threshold=-0.3):
         print(f"An error occurred: {e}")
 
 
-def train_model(file_path, new_data, pressure_threshold=-0.3):
+def train_model(file_path, new_data, pressure_threshold : float):
     file_path = resource_path(file_path)
     print(f"Running model with file: {file_path}")
 
@@ -63,7 +63,7 @@ def train_model(file_path, new_data, pressure_threshold=-0.3):
         print('Initial setup done')
 
         #Outlier Treatment
-        preprocess_data = outlier_treatment(full_data, pressure_threshold=pressure_threshold, moisture_upper=15, moisture_lower=0)
+        preprocess_data = outlier_treatment(full_data, pressure_threshold=pressure_threshold)
         print('Outlier Treatment done')
         
         #Scaling the values

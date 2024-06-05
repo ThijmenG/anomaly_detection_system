@@ -23,12 +23,11 @@ def lstm_model(ip_arr: np.array):
                              ip_arr.shape[3]))  # Reshaping the input array to match the input dimensions of the model
     inputs = Input(shape=(ip_arr.shape[1], ip_arr.shape[2]))  # Initializing the input size for the model
 
-    L1 = LSTM(16, activation='relu', return_sequences=True, kernel_regularizer=regularizers.l2(0.00))(
-        inputs)  # Model architecture
-    L2 = LSTM(4, activation='relu', return_sequences=False)(L1)
+    L1 = LSTM(48, activation='relu', return_sequences=True, kernel_regularizer=regularizers.l2(0.00))(inputs)  # Model architecture
+    L2 = LSTM(36, activation='relu', return_sequences=False)(L1)
     L3 = RepeatVector(ip_arr.shape[1])(L2)
-    L4 = LSTM(4, activation='relu', return_sequences=True)(L3)
-    L5 = LSTM(16, activation='relu', return_sequences=True)(L4)
+    L4 = LSTM(36, activation='relu', return_sequences=True)(L3)
+    L5 = LSTM(48, activation='relu', return_sequences=True)(L4)
 
     output = TimeDistributed(Dense(ip_arr.shape[2]))(L5)
     model = Model(inputs=inputs, outputs=output)
@@ -49,20 +48,19 @@ def train_model(ip_arr: np.array, model: keras.src.models.functional.Functional,
         history (tensorflow.python.keras.callbacks.History) : History from training the model
     """
 
-    ip_arr = ip_arr.reshape((ip_arr.shape[0], ip_arr.shape[1],
-                             ip_arr.shape[3]))  # Reshaping the input array to match the input dimensions of the model
+    ip_arr = ip_arr.reshape((ip_arr.shape[0], ip_arr.shape[1], ip_arr.shape[3]))  # Reshaping the input array to match the input dimensions of the model
 
-    optimizers = keras.optimizers.Adam(learning_rate=0.01)
+    optimizers = keras.optimizers.Adam(learning_rate=0.001)
     model.compile(optimizer=optimizers, loss='mae')  # The optimizer and loss function can be changed
+
     epochs_n = 100  # Parameters can be finetuned
     batch_n = 128
 
-    pressure_threshold = str(pressure_threshold)
-    pressure_threshold = pressure_threshold[1:]
-    pressure_threshold = pressure_threshold.replace('.', '_')
+    pressure_threshold_str = str(pressure_threshold)[1:].replace('.', '_')
 
-    model_save_path = resource_path(f"model_{pressure_threshold}.keras")
-    history = model.fit(ip_arr, ip_arr, epochs=epochs_n, batch_size=batch_n, validation_split=0.15).history
+    model_save_path = resource_path(rf"Source_file\trained_model\model_{pressure_threshold_str}.keras")
+    
+    history = model.fit(ip_arr, ip_arr, epochs=epochs_n, batch_size=batch_n, validation_split=0.05, shuffle = True).history
     model.save(model_save_path)  # Location for saving the model file
 
     return history

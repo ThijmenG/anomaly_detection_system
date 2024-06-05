@@ -29,13 +29,13 @@ def read_initial_data(df: pd.DataFrame):
     df = df[columns_to_select]
     return df
 
-def outlier_treatment(df: pd.DataFrame, pressure_threshold: float, moisture_upper: float, moisture_lower: float):
+def outlier_treatment(df: pd.DataFrame, pressure_threshold: float):
     df.loc[df['18BL02PT\PV -  (Bar)'] < pressure_threshold, '18BL02PT\PV -  (Bar)'] = pressure_threshold
     df.loc[df['18BL03PT\PV -  (Bar)'] < pressure_threshold, '18BL03PT\PV -  (Bar)'] = pressure_threshold
     df.loc[df['18FI02LT01 -  (kg)'] > 15, '18FI02LT01 -  (kg)'] = 15
     df.loc[df['18FI02LT01 -  (kg)'] < 0, '18FI02LT01 -  (kg)'] = 0
-    df.loc[df['18OV01HM01_filtered -  (%)'] > moisture_upper, '18OV01HM01_filtered -  (%)'] = moisture_upper
-    df.loc[df['18OV01HM01_filtered -  (%)'] < moisture_lower, '18OV01HM01_filtered -  (%)'] = moisture_lower
+    df.loc[df['18OV01HM01_filtered -  (%)'] > 4, '18OV01HM01_filtered -  (%)'] = 4
+    df.loc[df['18OV01HM01_filtered -  (%)'] < 2, '18OV01HM01_filtered -  (%)'] = 2
     return df
 
 def scaled_train(df: pd.DataFrame, pressure_threshold: float):
