@@ -224,7 +224,7 @@ class MainWindow(QMainWindow):
                 'Clog Location': [clogLocationInput.text() for clogLocationInput in self.clogLocationInputs]
             }
             clog_data = pd.DataFrame(data)
-            processed_data, predictions = run_model(resolved_file_path, new_data)
+            processed_data, predictions = run_model(resolved_file_path, new_data, pressure_threshold)
 
             self.resultWindow = PlotWindow(processed_data, predictions, clog_data=clog_data)
             self.resultWindow.show()
