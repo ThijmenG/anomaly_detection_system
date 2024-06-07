@@ -22,7 +22,7 @@ class MainWindow(QMainWindow):
         self.filePath = None
 
     def initUI(self):
-        self.setWindowTitle('Model Runner Application')
+        self.setWindowTitle('Anomaly Detection System')
         self.centerWindow()
         self.centralWidget = QWidget(self)
         self.setCentralWidget(self.centralWidget)

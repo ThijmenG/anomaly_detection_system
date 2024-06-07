@@ -58,7 +58,7 @@ def train_model(ip_arr: np.array, model: keras.src.models.functional.Functional,
 
     pressure_threshold_str = str(pressure_threshold)[1:].replace('.', '_')
 
-    model_save_path = resource_path(rf"Source_file\trained_model\model_{pressure_threshold_str}.keras")
+    model_save_path = resource_path(rf"Source_file\model_{pressure_threshold_str}.keras")
     
     history = model.fit(ip_arr, ip_arr, epochs=epochs_n, batch_size=batch_n, validation_split=0.05, shuffle = True).history
     model.save(model_save_path)  # Location for saving the model file

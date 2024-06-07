@@ -19,7 +19,7 @@ def predict_results(original_df: pd.DataFrame, scaled_arr: np.array, pressure_th
     """
     
     pressure_threshold_str = str(pressure_threshold)[1:].replace('.', '_')
-    model_path = resource_path(rf"Source_file\trained_model\model_{pressure_threshold_str}.keras")  # Importing the trained model
+    model_path = resource_path(rf"Source_file\model_{pressure_threshold_str}.keras")  # Importing the trained model
     print("File Path: {}".format(model_path))
 
     model = keras.models.load_model(model_path)

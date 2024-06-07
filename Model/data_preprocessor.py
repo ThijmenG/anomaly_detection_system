@@ -43,7 +43,7 @@ def scaled_train(df: pd.DataFrame, pressure_threshold: float):
     scaler = MinMaxScaler()
     scaled_arr = scaler.fit_transform(df)
     pressure_threshold_str = str(pressure_threshold)[1:].replace('.', '_')
-    scaler_filename = resource_path(rf"Source_file\trained_scaler\scaler_{pressure_threshold_str}.save")
+    scaler_filename = resource_path(rf"Source_file\scaler_{pressure_threshold_str}.save")
     joblib.dump(scaler, scaler_filename)
     scaled_arr_final = scaled_arr.reshape(scaled_arr.shape[0], 1, scaled_arr.shape[1])
     return scaled_arr_final
@@ -51,7 +51,7 @@ def scaled_train(df: pd.DataFrame, pressure_threshold: float):
 def scaled_predict(df: pd.DataFrame, pressure_threshold : float):
 
     pressure_threshold_str = str(pressure_threshold)[1:].replace('.', '_')
-    scaler_filename = resource_path(rf"Source_file\trained_scaler\scaler_{pressure_threshold_str}.save")
+    scaler_filename = resource_path(rf"Source_file\scaler_{pressure_threshold_str}.save")
 
     print('Scaler file name:', scaler_filename)
 
