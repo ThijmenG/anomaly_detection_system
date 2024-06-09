@@ -13,6 +13,7 @@ import pandas as pd
 
 
 class MainWindow(QMainWindow):
+    """ Main window for the application."""
     def __init__(self):
         super().__init__()
         self.initUI()
@@ -206,6 +207,7 @@ class MainWindow(QMainWindow):
         print('got to runModel')
 
         resolved_file_path = resource_path(self.filePath)
+        print(resolved_file_path)
         new_data = data_loader(resolved_file_path)
         print(new_data.head())
 

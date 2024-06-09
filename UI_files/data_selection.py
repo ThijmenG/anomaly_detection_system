@@ -5,6 +5,8 @@ from PyQt5.QtCore import pyqtSignal
 
 
 class DataSelectionLabel(QLabel):
+    """ QLabel subclass that allows users to select a file by dragging and dropping or clicking on the label."""
+
     fileSelected = pyqtSignal(str)  # Signal that emits the file path when a file is selected
     invalidFileSelected = pyqtSignal(str)  # Signal that emits an error message when an invalid file is selected
 

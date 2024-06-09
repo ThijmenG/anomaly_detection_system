@@ -9,6 +9,8 @@ from UI_files.resource_path import resource_path
 
 
 def run_model(file_path, new_data, pressure_threshold : float):
+    """ Run the model with the given file path and new data."""
+
     file_path = resource_path(file_path)
     print(f"Running model with file: {file_path}")
 
@@ -48,6 +50,7 @@ def run_model(file_path, new_data, pressure_threshold : float):
 
 
 def train_model(file_path, new_data, pressure_threshold : float):
+    """ Train the model with the given file path and new data, this can be used for retrain if needed in the future"""
     file_path = resource_path(file_path)
     print(f"Running model with file: {file_path}")
 

@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 
 class PlotCanvas(FigureCanvas):
+    """ Class to create a plot canvas for the plot window."""
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = self.fig.add_subplot(111)
@@ -65,6 +66,7 @@ class PlotCanvas(FigureCanvas):
 
 
 class PlotWindow(QMainWindow):
+    """ Class to create a window for plotting the results."""
     def __init__(self, new_data, predictions=None, clog_data=None):
         super().__init__()
         self.new_data = new_data

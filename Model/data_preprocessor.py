@@ -6,7 +6,7 @@ import os
 from UI_files.resource_path import resource_path
 
 def clearWeekends(df: pd.DataFrame) -> pd.DataFrame:
-
+    """ Clear weekends from the data"""
     df['Date'] = pd.to_datetime(df['Date'] , dayfirst = True)
     toDrop = []
     for ind, row in df.iterrows():
@@ -22,7 +22,6 @@ def clearWeekends(df: pd.DataFrame) -> pd.DataFrame:
     return newDf
 
 def read_initial_data(df: pd.DataFrame):
-
     df.set_index('Date', inplace=True)
     df.ffill(inplace=True)
     columns_to_select = ['18BL02PT\PV -  (Bar)', '18BL03PT\PV -  (Bar)', '18FI02LT01 -  (kg)', '18OV01HM01_filtered -  (%)']
@@ -30,6 +29,7 @@ def read_initial_data(df: pd.DataFrame):
     return df
 
 def outlier_treatment(df: pd.DataFrame, pressure_threshold: float):
+    """ Cuts of unrealistic values from the data"""
     df.loc[df['18BL02PT\PV -  (Bar)'] < pressure_threshold, '18BL02PT\PV -  (Bar)'] = pressure_threshold
     df.loc[df['18BL03PT\PV -  (Bar)'] < pressure_threshold, '18BL03PT\PV -  (Bar)'] = pressure_threshold
     df.loc[df['18FI02LT01 -  (kg)'] > 15, '18FI02LT01 -  (kg)'] = 15
@@ -39,7 +39,6 @@ def outlier_treatment(df: pd.DataFrame, pressure_threshold: float):
     return df
 
 def scaled_train(df: pd.DataFrame, pressure_threshold: float):
-
     scaler = MinMaxScaler()
     scaled_arr = scaler.fit_transform(df)
     pressure_threshold_str = str(pressure_threshold)[1:].replace('.', '_')
@@ -49,6 +48,7 @@ def scaled_train(df: pd.DataFrame, pressure_threshold: float):
     return scaled_arr_final
 
 def scaled_predict(df: pd.DataFrame, pressure_threshold : float):
+    """ Scales the data for prediction using the saved scaler file"""
 
     pressure_threshold_str = str(pressure_threshold)[1:].replace('.', '_')
     scaler_filename = resource_path(rf"Source_file\scaler_{pressure_threshold_str}.save")
