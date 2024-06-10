@@ -1,7 +1,6 @@
 # Confidential data files
 *.csv
 *.xlsx
-requirements.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
