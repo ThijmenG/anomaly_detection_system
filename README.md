@@ -26,11 +26,11 @@ pip install -r requirements.txt
 
 Open the Anomaly Detection System folder 
 
-![alt text](Documentation\Root_directtory.png)
+![alt text](Documentation/Root_directtory.png)
 
 The Model folder contains all the snippets required to modify the data and model structure
 
-![alt text](Documentation\Model_directory.png)
+![alt text](Documentation/Model_directory.png)
 
 The data_loader.py contains functions that is responsible for exporting the formatted data for further processing. If any issue arises in formatting or data loading, make sure to go through this py file for debugging.
 
@@ -39,7 +39,7 @@ The data_preprocessor.py contains functions that is responsible for data preproc
 The model_builder.py contains the implementation of model initialization, training and plotting the training curves. Changing the optimizers, batch_size, epochs and learning rate can be performed in train_model() function. 
 
 The results.py contains the functions for prediction and classifying the anomalies. If any change is made on number of time lagged features, the error calculation will change based on it. Make sure to change the 2 inside the minimization function to the altered time lagged feature values.
-![alt text](Documentation\Time_lagged.png)
+![alt text](Documentation/Time_lagged.png)
 If the model is re-trained on new data, the error distribution changes based on which thresholds will change. Make sure to change the threshold under each switch case statement to the new threshold values decided.
 
 ### Changing the pipeline
@@ -48,7 +48,7 @@ Any changes in the flow of the anomaly detection pipeline can be changed in mode
 
 The current system follows the architecture specified below,
 
-![alt text](Documentation\Software_Pipeline.png)
+![alt text](Documentation/Software_Pipeline.png)
 
 Further details on technicality of the implementation and information regarding the decisions can be referred from the report.
 
