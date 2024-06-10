@@ -10,16 +10,15 @@ Anomaly detection system is used for identification of rare events or observatio
 
 Start by cloning the repository
 
-'''
+```python
 $ git clone https://github.com/ThijmenG/anomaly_detection_system.git
-
-'''
+```
 
 Make sure to install the required dependencies before running the py files.
 
-'''
+```python
 pip install -r requirements.txt
-'''
+```
 
 
 ### How to use the repository
